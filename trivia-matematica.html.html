@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trivia Matemática Interactiva</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState } = React;
+        const { CheckCircle, XCircle, RotateCcw, Trophy, Brain, Star } = lucide;
+
+        const TriviaMatematica = () => {
+            const [currentQuestion, setCurrentQuestion] = useState(0);
+            const [score, setScore] = useState(0);
+            const [selectedAnswers, setSelectedAnswers] = useState({});
+            const [showResult, setShowResult] = useState(false);
+            const [gameFinished, setGameFinished] = useState(false);
+            const [answered, setAnswered] = useState(false);
+
+            const questions = [
+                {
+                    id: 1,
+                    category: "Cálculos Combinados",
+                    difficulty: "Medio",
+                    points: 1,
+                    question: "Calcula: 15 + 8 × 3 - 12 ÷ 4",
+                    options: ["36", "39", "33"],
+                    correct: 0,
+                    explanation: "Orden de operaciones: 15 + 24 - 3 = 36"
+                },
+                {
+                    id: 2,
+                    category: "Cálculos Combinados",
+                    difficulty: "Medio",
+                    points: 1,
+                    question: "Resuelve: (25 - 9) × 2 + 14 ÷ 7",
+                    options: ["34", "30", "38"],
+                    correct: 0,
+                    explanation: "16 × 2 + 2 = 32 + 2 = 34"
+                },
+                {
+                    id: 3,
+                    category: "Divisiones",
+                    difficulty: "Medio",
+                    points: 1,
+                    question: "¿Cuál es el resultado de 1.248 ÷ 24?",
+                    options: ["52", "48", "54"],
+                    correct: 0,
+                    explanation: "1.248 ÷ 24 = 52"
+                },
+                {
+                    id: 4,
+                    category: "Multiplicaciones",
+                    difficulty: "Medio",
+                    points: 1,
+                    question: "¿Cuál es el producto de 47 × 23?",
+                    options: ["1.081", "1.071", "1.091"],
+                    correct: 0,
+                    explanation: "47 × 23 = 1.081"
+                },
+                {
+                    id: 5,
+                    category: "Ecuaciones",
+                    difficulty: "Medio",
+                    points: 1,
+                    question: "Si x² = 64, ¿cuál es el valor de x?",
+                    options: ["8", "6", "10"],
+                    correct: 0,
+                    explanation: "√64 = 8, por lo tanto x = 8"
+                },
+                {
+                    id: 6,
+                    category: "Lenguaje Simbólico",
+                    difficulty: "Medio",
+                    points: 1,
+                    question: '"Un número aumentado en 5 es igual a 18"',
+                    options: ["x + 5 = 18", "x - 5 = 18", "5x = 18"],
+                    correct: 0,
+                    explanation: "Aumentado en 5 significa sumar 5 al número"
+                },
+                {
+                    id: 7,
+                    category: "Múltiplos y Divisores",
+                    difficulty: "Medio",
+                    points: 1,
+                    question: "¿Cuántos divisores tiene 120?",
+                    options: ["16", "14", "12"],
+                    correct: 0,
+                    explanation: "120 = 2³ × 3 × 5, tiene (3+1)(1+1)(1+1) = 16 divisores"
+                },
+                {
+                    id: 8,
+                    category: "Cálculos Combinados",
+                    difficulty: "Difícil",
+                    points: 2,
+                    question: "Calcula: 120 ÷ (8 - 2) + 5 × (12 - 7)",
+                    options: ["45", "40", "50"],
+                    correct: 0,
+                    explanation: "120 ÷ 6 + 5 × 5 = 20 + 25 = 45"
+                },
+                {
+                    id: 9,
+                    category: "Divisiones",
+                    difficulty: "Difícil",
+                    points: 2,
+                    question: "¿Cuánto es 15.624 ÷ 168?",
+                    options: ["93", "92", "95"],
+                    correct: 0,
+                    explanation: "15.624 ÷ 168 = 93"
+                },
+                {
+                    id: 10,
+                    category: "Multiplicaciones",
+                    difficulty: "Difícil",
+                    points: 2,
+                    question: "¿Cuánto es 287 × 146?",
+                    options: ["41.902", "41.892", "41.912"],
+                    correct: 0,
+                    explanation: "287 × 146 = 41.902"
+                }
+            ];
+
+            const handleAnswerSelect = (selectedIndex) => {
+                if (answered) return;
+                
+                setSelectedAnswers({
+                    ...selectedAnswers,
+                    [currentQuestion]: selectedIndex
+                });
+                
+                setAnswered(true);
+                setShowResult(true);
+                
+                if (selectedIndex === questions[currentQuestion].correct) {
+                    setScore(score + questions[currentQuestion].points);
+                }
+            };
+
+            const nextQuestion = () => {
+                if (currentQuestion < questions.length - 1) {
+                    setCurrentQuestion(currentQuestion + 1);
+                    setShowResult(false);
+                    setAnswered(false);
+                } else {
+                    setGameFinished(true);
+                }
+            };
+
+            const resetGame = () => {
+                setCurrentQuestion(0);
+                setScore(0);
+                setSelectedAnswers({});
+                setShowResult(false);
+                setGameFinished(false);
+                setAnswered(false);
+            };
+
+            const getScoreMessage = () => {
+                const maxScore = 15;
+                const percentage = (score / maxScore) * 100;
+                
+                if (percentage >= 85) return { message: "¡Excelente! Eres un genio matemático", color: "text-yellow-600" };
+                if (percentage >= 70) return { message: "¡Muy bueno! Dominas bien las matemáticas", color: "text-blue-600" };
+                if (percentage >= 55) return { message: "¡Bueno! Vas por buen camino", color: "text-green-600" };
+                if (percentage >= 40) return { message: "Regular, necesitas practicar más", color: "text-orange-600" };
+                return { message: "Necesitas estudiar más, ¡no te rindas!", color: "text-red-600" };
+            };
+
+            if (gameFinished) {
+                const scoreInfo = getScoreMessage();
+                return (
+                    <div className="container">
+                        <div style={{ textAlign: 'center' }}>
+                            <h2 style={{ fontSize: '2rem', marginBottom: '20px', color: '#333' }}>¡Trivia Completada!</h2>
+                            <div style={{ background: '#f8f9fa', padding: '30px', borderRadius: '15px', marginBottom: '30px' }}>
+                                <p style={{ fontSize: '3rem', fontWeight: 'bold', color: '#007bff', margin: '0 0 10px 0' }}>{score}</p>
+                                <p style={{ color: '#666', marginBottom: '20px' }}>de 15 puntos posibles</p>
+                                <p style={{ fontSize: '1.2rem', fontWeight: '600' }} className={scoreInfo.color}>{scoreInfo.message}</p>
+                            </div>
+                            <button
+                                onClick={resetGame}
+                                style={{
+                                    background: '#007bff',
+                                    color: 'white',
+                                    border: 'none',
+                                    padding: '12px 24px',
+                                    fontSize: '16px',
+                                    borderRadius: '10px',
+                                    cursor: 'pointer',
+                                    transition: 'background 0.3s'
+                                }}
+                                onMouseOver={(e) => e.target.style.background = '#0056b3'}
+                                onMouseOut={(e) => e.target.style.background = '#007bff'}
+                            >
+                                🔄 Jugar de nuevo
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
+            const currentQ = questions[currentQuestion];
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+
+            return (
+                <div className="container">
+                    <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                            <h1 style={{ fontSize: '1.8rem', color: '#333', margin: 0 }}>🧮 Trivia Matemática</h1>
+                            <div style={{ textAlign: 'right' }}>
+                                <p style={{ margin: '0 0 5px 0', color: '#666' }}>Puntaje: {score}</p>
+                                <p style={{ margin: 0, color: '#666' }}>Pregunta {currentQuestion + 1} de {questions.length}</p>
+                            </div>
+                        </div>
+                        
+                        <div style={{ width: '100%', background: '#e9ecef', borderRadius: '10px', height: '8px', marginBottom: '20px' }}>
+                            <div 
+                                style={{ 
+                                    background: '#007bff', 
+                                    height: '8px', 
+                                    borderRadius: '10px',
+                                    width: `${progress}%`,
+                                    transition: 'width 0.3s ease'
+                                }}
+                            ></div>
+                        </div>
+                        
+                        <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+                            <span style={{ 
+                                padding: '8px 16px', 
+                                background: '#e3f2fd', 
+                                color: '#1976d2', 
+                                borderRadius: '20px', 
+                                fontSize: '14px', 
+                                fontWeight: '500' 
+                            }}>
+                                {currentQ.category}
+                            </span>
+                            <span style={{ 
+                                padding: '8px 16px', 
+                                background: currentQ.difficulty === "Medio" ? '#fff3e0' : '#ffebee', 
+                                color: currentQ.difficulty === "Medio" ? '#f57c00' : '#c62828', 
+                                borderRadius: '20px', 
+                                fontSize: '14px', 
+                                fontWeight: '500' 
+                            }}>
+                                {currentQ.difficulty} ({currentQ.points} pts)
+                            </span>
+                        </div>
+                    </div>
+
+                    <div style={{ background: '#f8f9fa', padding: '30px', borderRadius: '15px', marginBottom: '20px' }}>
+                        <h2 style={{ fontSize: '1.3rem', marginBottom: '25px', color: '#333' }}>
+                            {currentQ.question}
+                        </h2>
+                        
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {currentQ.options.map((option, index) => {
+                                let buttonStyle = {
+                                    width: '100%',
+                                    padding: '16px',
+                                    textAlign: 'left',
+                                    borderRadius: '10px',
+                                    border: '2px solid',
+                                    background: 'white',
+                                    cursor: answered ? 'default' : 'pointer',
+                                    transition: 'all 0.2s',
+                                    fontSize: '16px'
+                                };
+                                
+                                if (!answered) {
+                                    buttonStyle.borderColor = '#dee2e6';
+                                } else {
+                                    if (index === currentQ.correct) {
+                                        buttonStyle.borderColor = '#28a745';
+                                        buttonStyle.background = '#d4edda';
+                                        buttonStyle.color = '#155724';
+                                    } else if (index === selectedAnswers[currentQuestion]) {
+                                        buttonStyle.borderColor = '#dc3545';
+                                        buttonStyle.background = '#f8d7da';
+                                        buttonStyle.color = '#721c24';
+                                    } else {
+                                        buttonStyle.borderColor = '#dee2e6';
+                                        buttonStyle.background = '#f8f9fa';
+                                        buttonStyle.color = '#6c757d';
+                                    }
+                                }
+                                
+                                return (
+                                    <button
+                                        key={index}
+                                        onClick={() => handleAnswerSelect(index)}
+                                        style={buttonStyle}
+                                        disabled={answered}
+                                        onMouseOver={(e) => {
+                                            if (!answered) {
+                                                e.target.style.borderColor = '#007bff';
+                                                e.target.style.background = '#e3f2fd';
+                                            }
+                                        }}
+                                        onMouseOut={(e) => {
+                                            if (!answered) {
+                                                e.target.style.borderColor = '#dee2e6';
+                                                e.target.style.background = 'white';
+                                            }
+                                        }}
+                                    >
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span>{option}</span>
+                                            {answered && index === currentQ.correct && <span style={{ color: '#28a745' }}>✅</span>}
+                                            {answered && index === selectedAnswers[currentQuestion] && index !== currentQ.correct && <span style={{ color: '#dc3545' }}>❌</span>}
+                                        </div>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        
+                        {showResult && (
+                            <div style={{ 
+                                marginTop: '20px', 
+                                padding: '15px', 
+                                background: '#e3f2fd', 
+                                borderRadius: '10px' 
+                            }}>
+                                <p style={{ margin: 0, color: '#333' }}>
+                                    <strong>Explicación:</strong> {currentQ.explanation}
+                                </p>
+                            </div>
+                        )}
+                        
+                        {showResult && (
+                            <div style={{ textAlign: 'center', marginTop: '25px' }}>
+                                <button
+                                    onClick={nextQuestion}
+                                    style={{
+                                        background: '#007bff',
+                                        color: 'white',
+                                        border: 'none',
+                                        padding: '12px 24px',
+                                        fontSize: '16px',
+                                        borderRadius: '10px',
+                                        cursor: 'pointer',
+                                        transition: 'background 0.3s'
+                                    }}
+                                    onMouseOver={(e) => e.target.style.background = '#0056b3'}
+                                    onMouseOut={(e) => e.target.style.background = '#007bff'}
+                                >
+                                    {currentQuestion === questions.length - 1 ? "Ver Resultado Final" : "Siguiente Pregunta ➡️"}
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<TriviaMatematica />, document.getElementById('root'));
+    </script>
+</body>
+</html>
